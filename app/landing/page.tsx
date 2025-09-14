@@ -32,75 +32,48 @@ import {
 const newsClippings = [
   {
     id: 1,
-    title: "Marketing Budgets Wasted on Wrong Channels",
-    source: "Marketing Weekly",
-    time: "2 hours ago",
+    title: "💸 Tradie spends $20k on SEO, gets four monthly views, zero sales.",
+    source: "news.com.au",
+    time: "1h ago",
     color: "bg-red-100 border-red-200"
   },
   {
     id: 2,
-    title: "AI Optimization Increases ROI by 340%",
-    source: "TechCrunch",
-    time: "4 hours ago",
-    color: "bg-green-100 border-green-200"
-  },
-  {
-    id: 3,
-    title: "Small Businesses Struggle with Ad Performance",
-    source: "Forbes",
-    time: "6 hours ago",
+    title: "📉 HUL raises ad spend to ₹1,586 crores, profits still dip 6%.",
+    source: "storyboard18.com",
+    time: "2h ago",
     color: "bg-yellow-100 border-yellow-200"
   },
   {
+    id: 3,
+    title: "💸 Indian banks’ ad spends up 160%, but efficiency and returns decline.",
+    source: "financialexpress.com",
+    time: "3h ago",
+    color: "bg-orange-100 border-orange-200"
+  },
+  {
     id: 4,
-    title: "Manual Campaign Management Costs 40% More",
-    source: "AdAge",
-    time: "8 hours ago",
+    title: "📊 HUL boosts ads to revive sluggish demand, risking margins amid weak growth.",
+    source: "ndtvprofit.com",
+    time: "4h ago",
     color: "bg-blue-100 border-blue-200"
   },
   {
     id: 5,
-    title: "Data-Driven Marketing Outperforms by 200%",
-    source: "Harvard Business Review",
-    time: "12 hours ago",
+    title: "📉 Heavy marketing spends escalate, but poor strategies drain growth and margins.",
+    source: "storyboard18.com",
+    time: "5h ago",
     color: "bg-purple-100 border-purple-200"
   },
   {
     id: 6,
-    title: "Social Media Ad Spend Reaches Record Highs",
-    source: "Social Media Today",
-    time: "1 hour ago",
-    color: "bg-indigo-100 border-indigo-200"
-  },
-  {
-    id: 7,
-    title: "Email Marketing ROI Drops 15% This Quarter",
-    source: "Email Marketing Weekly",
-    time: "3 hours ago",
+    title: "🚨 Brands chase visibility with flawed models, losing money despite rising spends.",
+    source: "storyboard18.com",
+    time: "6h ago",
     color: "bg-pink-100 border-pink-200"
-  },
-  {
-    id: 8,
-    title: "Google Ads Competition Drives Up Costs 25%",
-    source: "Search Engine Land",
-    time: "5 hours ago",
-    color: "bg-orange-100 border-orange-200"
-  },
-  {
-    id: 9,
-    title: "Content Marketing Budgets Cut by 30%",
-    source: "Content Marketing Institute",
-    time: "7 hours ago",
-    color: "bg-teal-100 border-teal-200"
-  },
-  {
-    id: 10,
-    title: "Influencer Marketing Shows 45% Decline in ROI",
-    source: "Influencer Marketing Hub",
-    time: "9 hours ago",
-    color: "bg-cyan-100 border-cyan-200"
-  },
+  }
 ]
+
 
 export default function LandingPage() {
   const router = useRouter()
