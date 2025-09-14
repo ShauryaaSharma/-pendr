@@ -8,44 +8,86 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { 
   Check, 
   CreditCard, 
   Lock, 
   Shield, 
   ArrowLeft,
   Loader2,
-  CheckCircle
+  CheckCircle,
+  Star,
+  Zap,
+  Crown
 } from 'lucide-react'
 
+const tiers = [
+  {
+    name: "Playground",
+    price: "Free",
+    priceValue: 0,
+    description: "Perfect for solo founders and hobbyists",
+    icon: <Star className="w-6 h-6" />,
+    variant: "success" as const,
+    popular: false,
+    features: [
+      "1 campaign simulation per month",
+      "Basic ROI dashboard",
+      "No optimizer",
+      "Community support",
+    ],
+    buttonText: "Get Started Free",
+    buttonVariant: "success" as const,
+  },
+  {
+    name: "Kickstarter",
+    price: "₹2,999",
+    priceValue: 2999,
+    description: "Ideal for small teams and growing startups",
+    icon: <Zap className="w-6 h-6" />,
+    variant: "primary" as const,
+    popular: true,
+    features: [
+      "Unlimited simulations",
+      "Budget optimizer unlocked",
+      "All industries available",
+      "Export reports (PDF/CSV)",
+      "Priority support",
+    ],
+    buttonText: "Start Pro Trial",
+    buttonVariant: "primary" as const,
+  },
+  {
+    name: "Overdrive",
+    price: "₹17,999",
+    priceValue: 17999,
+    description: "Enterprise solution for agencies and large teams",
+    icon: <Crown className="w-6 h-6" />,
+    variant: "premium" as const,
+    popular: false,
+    features: [
+      "Unlimited simulations + API access",
+      "HubSpot, Salesforce, Google Ads integration",
+      "White-label reports with agency branding",
+      "Team collaboration (up to 10 users)",
+      "Custom benchmarks upload",
+      "Enterprise AI optimizer (multi-campaign)",
+      "Dedicated manager + SLA-backed support",
+    ],
+    buttonText: "Contact Sales",
+    buttonVariant: "premium" as const,
+  },
+];
+
 const plans = {
-  starter: {
-    name: 'Starter',
-    price: 99,
-    features: ['Up to $10K monthly ad spend', 'AI budget optimization', 'Basic analytics dashboard', 'Email support']
-  },
-  professional: {
-    name: 'Professional',
-    price: 299,
-    features: ['Up to $50K monthly ad spend', 'Advanced AI optimization', 'Full analytics suite', 'Ad simulation & rating', 'Priority support']
-  },
-  enterprise: {
-    name: 'Enterprise',
-    price: 999,
-    features: ['Unlimited ad spend', 'Custom AI models', 'Advanced reporting', 'White-label options', 'Dedicated account manager']
-  }
+  playground: tiers[0],
+  kickstarter: tiers[1],
+  overdrive: tiers[2]
 }
 
 export default function PaymentPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const planType = searchParams.get('plan') as keyof typeof plans || 'starter'
+  const planType = searchParams.get('plan') as keyof typeof plans || 'kickstarter'
   const plan = plans[planType]
 
   const [formData, setFormData] = useState({
@@ -136,6 +178,15 @@ export default function PaymentPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    // Handle free plan
+    if (plan.priceValue === 0) {
+      setIsSuccess(true)
+      setTimeout(() => {
+        router.push('/')
+      }, 2000)
+      return
+    }
+    
     if (!validateForm()) {
       return
     }
@@ -191,167 +242,239 @@ export default function PaymentPage() {
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Payment Form */}
-          <Card className="shadow-xl">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Payment Information
-              </CardTitle>
-              <CardDescription>
-                Complete your subscription to $pendr {plan.name}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Card Information */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Card Details</h3>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="cardNumber">Card Number</Label>
-                    <Input
-                      id="cardNumber"
-                      placeholder="1234 5678 9012 3456"
-                      value={formData.cardNumber}
-                      onChange={(e) => handleInputChange('cardNumber', formatCardNumber(e.target.value))}
-                      className={errors.cardNumber ? 'border-red-500' : ''}
-                    />
-                    {errors.cardNumber && (
-                      <p className="text-sm text-red-600">{errors.cardNumber}</p>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
+          {/* Payment Form - Only show for paid plans */}
+          {plan.priceValue > 0 && (
+            <Card className="shadow-xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Payment Information
+                </CardTitle>
+                <CardDescription>
+                  Complete your subscription to $pendr {plan.name}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Card Information */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Card Details</h3>
+                    
                     <div className="space-y-2">
-                      <Label htmlFor="expiryDate">Expiry Date</Label>
+                      <Label htmlFor="cardNumber">Card Number</Label>
                       <Input
-                        id="expiryDate"
-                        placeholder="MM/YY"
-                        value={formData.expiryDate}
-                        onChange={(e) => handleInputChange('expiryDate', formatExpiryDate(e.target.value))}
-                        className={errors.expiryDate ? 'border-red-500' : ''}
+                        id="cardNumber"
+                        placeholder="1234 5678 9012 3456"
+                        value={formData.cardNumber}
+                        onChange={(e) => handleInputChange('cardNumber', formatCardNumber(e.target.value))}
+                        className={errors.cardNumber ? 'border-red-500' : ''}
                       />
-                      {errors.expiryDate && (
-                        <p className="text-sm text-red-600">{errors.expiryDate}</p>
+                      {errors.cardNumber && (
+                        <p className="text-sm text-red-600">{errors.cardNumber}</p>
                       )}
                     </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="expiryDate">Expiry Date</Label>
+                        <Input
+                          id="expiryDate"
+                          placeholder="MM/YY"
+                          value={formData.expiryDate}
+                          onChange={(e) => handleInputChange('expiryDate', formatExpiryDate(e.target.value))}
+                          className={errors.expiryDate ? 'border-red-500' : ''}
+                        />
+                        {errors.expiryDate && (
+                          <p className="text-sm text-red-600">{errors.expiryDate}</p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="cvv">CVV</Label>
+                        <Input
+                          id="cvv"
+                          placeholder="123"
+                          value={formData.cvv}
+                          onChange={(e) => handleInputChange('cvv', e.target.value.replace(/\D/g, '').slice(0, 4))}
+                          className={errors.cvv ? 'border-red-500' : ''}
+                        />
+                        {errors.cvv && (
+                          <p className="text-sm text-red-600">{errors.cvv}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Billing Information */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Billing Information</h3>
+                    
                     <div className="space-y-2">
-                      <Label htmlFor="cvv">CVV</Label>
+                      <Label htmlFor="name">Full Name</Label>
                       <Input
-                        id="cvv"
-                        placeholder="123"
-                        value={formData.cvv}
-                        onChange={(e) => handleInputChange('cvv', e.target.value.replace(/\D/g, '').slice(0, 4))}
-                        className={errors.cvv ? 'border-red-500' : ''}
+                        id="name"
+                        placeholder="John Doe"
+                        value={formData.name}
+                        onChange={(e) => handleInputChange('name', e.target.value)}
+                        className={errors.name ? 'border-red-500' : ''}
                       />
-                      {errors.cvv && (
-                        <p className="text-sm text-red-600">{errors.cvv}</p>
+                      {errors.name && (
+                        <p className="text-sm text-red-600">{errors.name}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="john@example.com"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
+                        className={errors.email ? 'border-red-500' : ''}
+                      />
+                      {errors.email && (
+                        <p className="text-sm text-red-600">{errors.email}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="address">Address</Label>
+                      <Input
+                        id="address"
+                        placeholder="123 Main St"
+                        value={formData.address}
+                        onChange={(e) => handleInputChange('address', e.target.value)}
+                        className={errors.address ? 'border-red-500' : ''}
+                      />
+                      {errors.address && (
+                        <p className="text-sm text-red-600">{errors.address}</p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="city">City</Label>
+                        <Input
+                          id="city"
+                          placeholder="New York"
+                          value={formData.city}
+                          onChange={(e) => handleInputChange('city', e.target.value)}
+                          className={errors.city ? 'border-red-500' : ''}
+                        />
+                        {errors.city && (
+                          <p className="text-sm text-red-600">{errors.city}</p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="zipCode">ZIP Code</Label>
+                        <Input
+                          id="zipCode"
+                          placeholder="10001"
+                          value={formData.zipCode}
+                          onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                          className={errors.zipCode ? 'border-red-500' : ''}
+                        />
+                        {errors.zipCode && (
+                          <p className="text-sm text-red-600">{errors.zipCode}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button type="submit" className="w-full" disabled={isProcessing}>
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing Payment...
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="mr-2 h-4 w-4" />
+                        Complete Payment - {plan.price}
+                      </>
+                    )}
+                  </Button>
+
+                  <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                    <Shield className="h-4 w-4" />
+                    <span>Your payment information is secure and encrypted</span>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Free Plan Signup */}
+          {plan.priceValue === 0 && (
+            <Card className="shadow-xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  {plan.icon}
+                  Get Started with {plan.name}
+                </CardTitle>
+                <CardDescription>
+                  Start your free journey with $pendr
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Account Information</h3>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Full Name</Label>
+                      <Input
+                        id="name"
+                        placeholder="John Doe"
+                        value={formData.name}
+                        onChange={(e) => handleInputChange('name', e.target.value)}
+                        className={errors.name ? 'border-red-500' : ''}
+                      />
+                      {errors.name && (
+                        <p className="text-sm text-red-600">{errors.name}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="john@example.com"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
+                        className={errors.email ? 'border-red-500' : ''}
+                      />
+                      {errors.email && (
+                        <p className="text-sm text-red-600">{errors.email}</p>
                       )}
                     </div>
                   </div>
-                </div>
 
-                <Separator />
-
-                {/* Billing Information */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Billing Information</h3>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input
-                      id="name"
-                      placeholder="John Doe"
-                      value={formData.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                      className={errors.name ? 'border-red-500' : ''}
-                    />
-                    {errors.name && (
-                      <p className="text-sm text-red-600">{errors.name}</p>
+                  <Button type="submit" className="w-full" disabled={isProcessing}>
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating Account...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="mr-2 h-4 w-4" />
+                        {plan.buttonText}
+                      </>
                     )}
+                  </Button>
+
+                  <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                    <Shield className="h-4 w-4" />
+                    <span>Your information is secure and encrypted</span>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="john@example.com"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      className={errors.email ? 'border-red-500' : ''}
-                    />
-                    {errors.email && (
-                      <p className="text-sm text-red-600">{errors.email}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Address</Label>
-                    <Input
-                      id="address"
-                      placeholder="123 Main St"
-                      value={formData.address}
-                      onChange={(e) => handleInputChange('address', e.target.value)}
-                      className={errors.address ? 'border-red-500' : ''}
-                    />
-                    {errors.address && (
-                      <p className="text-sm text-red-600">{errors.address}</p>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="city">City</Label>
-                      <Input
-                        id="city"
-                        placeholder="New York"
-                        value={formData.city}
-                        onChange={(e) => handleInputChange('city', e.target.value)}
-                        className={errors.city ? 'border-red-500' : ''}
-                      />
-                      {errors.city && (
-                        <p className="text-sm text-red-600">{errors.city}</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="zipCode">ZIP Code</Label>
-                      <Input
-                        id="zipCode"
-                        placeholder="10001"
-                        value={formData.zipCode}
-                        onChange={(e) => handleInputChange('zipCode', e.target.value)}
-                        className={errors.zipCode ? 'border-red-500' : ''}
-                      />
-                      {errors.zipCode && (
-                        <p className="text-sm text-red-600">{errors.zipCode}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <Button type="submit" className="w-full" disabled={isProcessing}>
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing Payment...
-                    </>
-                  ) : (
-                    <>
-                      <Lock className="mr-2 h-4 w-4" />
-                      Complete Payment - ${plan.price}/month
-                    </>
-                  )}
-                </Button>
-
-                <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-                  <Shield className="h-4 w-4" />
-                  <span>Your payment information is secure and encrypted</span>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+                </form>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Order Summary */}
           <Card className="shadow-xl">
@@ -365,7 +488,7 @@ export default function PaymentPage() {
                     <h3 className="font-semibold">$pendr {plan.name}</h3>
                     <p className="text-sm text-gray-600">Monthly subscription</p>
                   </div>
-                  <span className="text-lg font-semibold">${plan.price}/month</span>
+                  <span className="text-lg font-semibold">{plan.price}</span>
                 </div>
 
                 <Separator />
@@ -387,15 +510,15 @@ export default function PaymentPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>${plan.price}</span>
+                    <span>{plan.price}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Tax</span>
-                    <span>$0.00</span>
+                    <span>₹0.00</span>
                   </div>
                   <div className="flex justify-between font-semibold text-lg">
                     <span>Total</span>
-                    <span>${plan.price}/month</span>
+                    <span>{plan.price}</span>
                   </div>
                 </div>
 

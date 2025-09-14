@@ -13,6 +13,7 @@ import {
 import { Menu, X, User, LogOut, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
+import Logo from '@/components/Logo'
 
 export function LandingNavbar() {
   const router = useRouter()
@@ -52,10 +53,10 @@ export function LandingNavbar() {
               onClick={() => router.push('/')}
               className="flex items-center gap-2 text-xl font-bold text-gray-900 hover:text-blue-600"
             >
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">$</span>
-              </div>
-              $pendr
+              <Logo size={40} variant="icon" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                $pendr
+              </span>
             </Button>
           </div>
 

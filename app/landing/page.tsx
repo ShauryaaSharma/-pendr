@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import Logo from '@/components/Logo'
 import { 
   Brain, 
   BarChart3, 
@@ -23,7 +24,8 @@ import {
   ArrowUpRight,
   DollarSign,
   Shield,
-  Clock
+  Clock,
+  Crown
 } from 'lucide-react'
 
 // News clippings data
@@ -142,6 +144,11 @@ export default function LandingPage() {
       <section className="relative bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
+            {/* Logo */}
+            <div className="flex justify-center mb-8">
+              <Logo size={120} variant="simple" />
+            </div>
+            
             <Badge className="mb-6 bg-blue-100 text-blue-800 border-blue-200">
               <Sparkles className="h-3 w-3 mr-1" />
               AI-Powered Marketing Platform
@@ -286,45 +293,113 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow">
+            <Card 
+              className="text-center p-6 hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-105 border-2 hover:border-blue-300" 
+              onClick={() => router.push('/ai-optimizer')}
+            >
               <div className="mx-auto mb-4 p-4 bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center">
                 <Brain className="h-8 w-8 text-blue-600" />
               </div>
               <h3 className="text-xl font-semibold mb-3">AI Optimization</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 mb-4">
                 Get the perfect budget allocation across all channels using advanced AI algorithms
               </p>
+              <Button variant="outline" size="sm" className="text-blue-600 border-blue-300 hover:bg-blue-50">
+                Try AI Optimization
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </Card>
 
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow">
+            <Card 
+              className="text-center p-6 hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-105 border-2 hover:border-green-300" 
+              onClick={() => router.push('/campaign-setup')}
+            >
               <div className="mx-auto mb-4 p-4 bg-green-100 rounded-full w-16 h-16 flex items-center justify-center">
                 <BarChart3 className="h-8 w-8 text-green-600" />
               </div>
               <h3 className="text-xl font-semibold mb-3">Real-time Analysis</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 mb-4">
                 Monitor performance and get instant recommendations for improvement
               </p>
+              <Button variant="outline" size="sm" className="text-green-600 border-green-300 hover:bg-green-50">
+                Start Analysis
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </Card>
 
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow">
+            <Card 
+              className="text-center p-6 hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-105 border-2 hover:border-purple-300" 
+              onClick={() => router.push('/simulate')}
+            >
               <div className="mx-auto mb-4 p-4 bg-purple-100 rounded-full w-16 h-16 flex items-center justify-center">
                 <Eye className="h-8 w-8 text-purple-600" />
               </div>
               <h3 className="text-xl font-semibold mb-3">Ad Simulation</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 mb-4">
                 Preview your ads across platforms before spending a dime
               </p>
+              <Button variant="outline" size="sm" className="text-purple-600 border-purple-300 hover:bg-purple-50">
+                Simulate Ad
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </Card>
 
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow">
+            <Card 
+              className="text-center p-6 hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-105 border-2 hover:border-orange-300" 
+              onClick={() => router.push('/rate-ad')}
+            >
               <div className="mx-auto mb-4 p-4 bg-orange-100 rounded-full w-16 h-16 flex items-center justify-center">
                 <Star className="h-8 w-8 text-orange-600" />
               </div>
               <h3 className="text-xl font-semibold mb-3">Ad Rating</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 mb-4">
                 Get AI-powered analysis and improvement suggestions for your creatives
               </p>
+              <Button variant="outline" size="sm" className="text-orange-600 border-orange-300 hover:bg-orange-50">
+                Rate My Ad
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </Card>
+          </div>
+
+          {/* Try Solutions Section */}
+          <div className="text-center mt-12">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">
+              Ready to Try Our Solutions?
+            </h3>
+            <p className="text-lg text-gray-600 mb-8">
+              Click on any solution above or use these quick access buttons
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Button 
+                onClick={() => router.push('/ai-optimizer')}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Brain className="mr-2 h-5 w-5" />
+                AI Optimization
+              </Button>
+              <Button 
+                onClick={() => router.push('/campaign-setup')}
+                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white"
+              >
+                <BarChart3 className="mr-2 h-5 w-5" />
+                Campaign Analysis
+              </Button>
+              <Button 
+                onClick={() => router.push('/simulate')}
+                className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                <Eye className="mr-2 h-5 w-5" />
+                Ad Simulation
+              </Button>
+              <Button 
+                onClick={() => router.push('/rate-ad')}
+                className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                <Star className="mr-2 h-5 w-5" />
+                Ad Rating
+              </Button>
+            </div>
           </div>
 
           {/* USP Section */}
@@ -417,42 +492,46 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Starter Plan */}
+            {/* Playground Plan */}
             <Card className="relative">
               <CardHeader className="text-center pb-8">
-                <CardTitle className="text-2xl">Starter</CardTitle>
-                <CardDescription>Perfect for small businesses</CardDescription>
+                <div className="flex justify-center mb-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <Star className="h-6 w-6 text-green-600" />
+                  </div>
+                </div>
+                <CardTitle className="text-2xl">Playground</CardTitle>
+                <CardDescription>Perfect for solo founders and hobbyists</CardDescription>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">$99</span>
-                  <span className="text-gray-500">/month</span>
+                  <span className="text-4xl font-bold">Free</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-green-600" />
-                    <span>Up to $10K monthly ad spend</span>
+                    <span>1 campaign simulation per month</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-green-600" />
-                    <span>AI budget optimization</span>
+                    <span>Basic ROI dashboard</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-green-600" />
-                    <span>Basic analytics dashboard</span>
+                    <span>No optimizer</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-green-600" />
-                    <span>Email support</span>
+                    <span>Community support</span>
                   </div>
                 </div>
-                <Button className="w-full mt-6" onClick={() => handlePaymentRedirect('starter')}>
-                  Get Started
+                <Button className="w-full mt-6" onClick={() => handlePaymentRedirect('playground')}>
+                  Get Started Free
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Professional Plan */}
+            {/* Kickstarter Plan */}
             <Card className="relative border-2 border-blue-500">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <Badge className="bg-blue-500 text-white px-4 py-1">
@@ -460,76 +539,92 @@ export default function LandingPage() {
                 </Badge>
               </div>
               <CardHeader className="text-center pb-8">
-                <CardTitle className="text-2xl">Professional</CardTitle>
-                <CardDescription>Best for growing businesses</CardDescription>
+                <div className="flex justify-center mb-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Zap className="h-6 w-6 text-blue-600" />
+                  </div>
+                </div>
+                <CardTitle className="text-2xl">Kickstarter</CardTitle>
+                <CardDescription>Ideal for small teams and growing startups</CardDescription>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">$299</span>
-                  <span className="text-gray-500">/month</span>
+                  <span className="text-4xl font-bold">₹2,999</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-green-600" />
-                    <span>Up to $50K monthly ad spend</span>
+                    <span>Unlimited simulations</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-green-600" />
-                    <span>Advanced AI optimization</span>
+                    <span>Budget optimizer unlocked</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-green-600" />
-                    <span>Full analytics suite</span>
+                    <span>All industries available</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-green-600" />
-                    <span>Ad simulation & rating</span>
+                    <span>Export reports (PDF/CSV)</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-green-600" />
                     <span>Priority support</span>
                   </div>
                 </div>
-                <Button className="w-full mt-6" onClick={() => handlePaymentRedirect('professional')}>
-                  Get Started
+                <Button className="w-full mt-6" onClick={() => handlePaymentRedirect('kickstarter')}>
+                  Start Pro Trial
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Enterprise Plan */}
+            {/* Overdrive Plan */}
             <Card className="relative">
               <CardHeader className="text-center pb-8">
-                <CardTitle className="text-2xl">Enterprise</CardTitle>
-                <CardDescription>For large organizations</CardDescription>
+                <div className="flex justify-center mb-4">
+                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                    <Crown className="h-6 w-6 text-purple-600" />
+                  </div>
+                </div>
+                <CardTitle className="text-2xl">Overdrive</CardTitle>
+                <CardDescription>Enterprise solution for agencies and large teams</CardDescription>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">$999</span>
-                  <span className="text-gray-500">/month</span>
+                  <span className="text-4xl font-bold">₹17,999</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-green-600" />
-                    <span>Unlimited ad spend</span>
+                    <span>Unlimited simulations + API access</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-green-600" />
-                    <span>Custom AI models</span>
+                    <span>HubSpot, Salesforce, Google Ads integration</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-green-600" />
-                    <span>Advanced reporting</span>
+                    <span>White-label reports with agency branding</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-green-600" />
-                    <span>White-label options</span>
+                    <span>Team collaboration (up to 10 users)</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-green-600" />
-                    <span>Dedicated account manager</span>
+                    <span>Custom benchmarks upload</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-green-600" />
+                    <span>Enterprise AI optimizer (multi-campaign)</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-green-600" />
+                    <span>Dedicated manager + SLA-backed support</span>
                   </div>
                 </div>
-                <Button className="w-full mt-6" onClick={() => handlePaymentRedirect('enterprise')}>
+                <Button className="w-full mt-6" onClick={() => handlePaymentRedirect('overdrive')}>
                   Contact Sales
                 </Button>
               </CardContent>
@@ -573,14 +668,10 @@ export default function LandingPage() {
               Start Free Trial
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              className="px-8 py-4 text-lg border-white text-white hover:bg-white hover:text-blue-600"
-              onClick={() => scrollToSection('pricing')}
-            >
-              View Pricing
-            </Button>
+
+              
+            
+            
           </div>
         </div>
       </section>
