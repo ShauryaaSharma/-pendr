@@ -1,4 +1,4 @@
-// File: C:\Users\shaur\Downloads\HackX\app\ai-optimizer\page.tsx
+// File: C:\Spendr\app\ai-optimizer\page.tsx
 import * as entry from '../../../../app/ai-optimizer/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

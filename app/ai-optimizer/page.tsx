@@ -510,29 +510,71 @@ export default function AIOptimizerPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5" />
-                    AI-Optimized Budget Allocation
+                    <Target className="h-5 w-5" />
+                    Budget Distribution
                   </CardTitle>
                   <CardDescription>
-                    Ideal spending distribution across marketing channels
+                    Click on any segment to view detailed analysis
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-80">
+                  <div className="h-96">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={optimizationResult.channelAllocation}
+                          data={[
+                            {
+                              id: 'facebook',
+                              name: 'Paid Social Facebook',
+                              percentage: 35,
+                              budget: 35000,
+                              color: '#3B82F6'
+                            },
+                            {
+                              id: 'google',
+                              name: 'Google Ads',
+                              percentage: 25,
+                              budget: 25000,
+                              color: '#10B981'
+                            },
+                            {
+                              id: 'display',
+                              name: 'Display Advertising',
+                              percentage: 20,
+                              budget: 20000,
+                              color: '#F59E0B'
+                            },
+                            {
+                              id: 'affiliate',
+                              name: 'Affiliate Marketing',
+                              percentage: 12,
+                              budget: 12000,
+                              color: '#EF4444'
+                            },
+                            {
+                              id: 'email',
+                              name: 'Email Marketing',
+                              percentage: 8,
+                              budget: 8000,
+                              color: '#8B5CF6'
+                            }
+                          ]}
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={({ channel, percentage }) => `${channel} ${percentage}%`}
-                          outerRadius={80}
+                          label={({ name, percentage }) => `${name} ${percentage}%`}
+                          outerRadius={120}
                           fill="#8884d8"
-                          dataKey="budget"
+                          dataKey="percentage"
                           onClick={() => router.push('/ai-optimizer/channel-breakdown')}
                         >
-                          {optimizationResult.channelAllocation.map((entry, index) => (
+                          {[
+                            { color: '#3B82F6' },
+                            { color: '#10B981' },
+                            { color: '#F59E0B' },
+                            { color: '#EF4444' },
+                            { color: '#8B5CF6' }
+                          ].map((entry, index) => (
                             <Cell 
                               key={`cell-${index}`} 
                               fill={entry.color}
@@ -540,7 +582,12 @@ export default function AIOptimizerPage() {
                             />
                           ))}
                         </Pie>
-                        <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Budget']} />
+                        <Tooltip 
+                          formatter={(value: number, name: string, props: any) => [
+                            `${value}% ($${props.payload.budget.toLocaleString()})`, 
+                            'Budget'
+                          ]}
+                        />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -549,22 +596,67 @@ export default function AIOptimizerPage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Budget by Channel</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <DollarSign className="h-5 w-5" />
+                    Budget Summary
+                  </CardTitle>
                   <CardDescription>
-                    Detailed breakdown of recommended spend
+                    Total budget: $100,000
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={optimizationResult.channelAllocation}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="channel" angle={-45} textAnchor="end" height={100} />
-                        <YAxis />
-                        <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Budget']} />
-                        <Bar dataKey="budget" fill="#3B82F6" />
-                      </BarChart>
-                    </ResponsiveContainer>
+                  <div className="space-y-4">
+                    {[
+                      {
+                        id: 'facebook',
+                        name: 'Paid Social Facebook',
+                        percentage: 35,
+                        budget: 35000,
+                        color: '#3B82F6'
+                      },
+                      {
+                        id: 'google',
+                        name: 'Google Ads',
+                        percentage: 25,
+                        budget: 25000,
+                        color: '#10B981'
+                      },
+                      {
+                        id: 'display',
+                        name: 'Display Advertising',
+                        percentage: 20,
+                        budget: 20000,
+                        color: '#F59E0B'
+                      },
+                      {
+                        id: 'affiliate',
+                        name: 'Affiliate Marketing',
+                        percentage: 12,
+                        budget: 12000,
+                        color: '#EF4444'
+                      },
+                      {
+                        id: 'email',
+                        name: 'Email Marketing',
+                        percentage: 8,
+                        budget: 8000,
+                        color: '#8B5CF6'
+                      }
+                    ].map((channel) => (
+                      <div key={channel.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-4 h-4 rounded"
+                            style={{ backgroundColor: channel.color }}
+                          />
+                          <span className="font-medium">{channel.name}</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold">${channel.budget.toLocaleString()}</div>
+                          <div className="text-sm text-gray-600">{channel.percentage}%</div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
