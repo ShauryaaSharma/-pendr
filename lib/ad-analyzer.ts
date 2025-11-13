@@ -105,9 +105,18 @@ function ngrams(tokens: string[], n: number = 2): Set<string> {
 
 function jaccard(a: Set<string>, b: Set<string>): number {
   if (a.size === 0 && b.size === 0) return 0;
-  const intersection = new Set([...a].filter(x => b.has(x)));
-  const union = new Set([...a, ...b]);
-  return intersection.size / union.size;
+
+  const intersection = new Set<string>();
+  a.forEach(x => {
+    if (b.has(x)) intersection.add(x);
+  });
+
+  const union = new Set<string>();
+  a.forEach(x => union.add(x));
+  b.forEach(x => union.add(x));
+
+  // avoid division by zero (shouldn't happen because sizes checked above)
+  return union.size === 0 ? 0 : intersection.size / union.size;
 }
 
 export function scoreReadability(text: string, maxPoints: number = 20): number {
