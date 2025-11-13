@@ -1,5 +1,3 @@
-import { SentimentIntensityAnalyzer } from 'nltk/sentiment/vader';
-
 // Mock NLTK implementation for browser environment
 class MockSentimentIntensityAnalyzer {
   polarity_scores(text: string) {
@@ -16,7 +14,7 @@ class MockSentimentIntensityAnalyzer {
       if (negativeWords.includes(word)) negative++;
     });
     
-    const total = words.length;
+    const total = words.length || 1;
     const pos = positive / total;
     const neg = negative / total;
     const compound = (pos - neg) * 0.5; // Simplified compound score
@@ -24,13 +22,13 @@ class MockSentimentIntensityAnalyzer {
     return {
       pos,
       neg,
-      neu: 1 - pos - neg,
+      neu: Math.max(0, 1 - pos - neg),
       compound: Math.max(-1, Math.min(1, compound))
     };
   }
 }
 
-const SIA = new MockSentimentIntensityAnalyzer();
+export const analyzer = new MockSentimentIntensityAnalyzer();
 
 const WORD_RE = /[A-Za-z0-9']+/g;
 const VOWELS = "aeiouy";
@@ -137,7 +135,7 @@ export function scoreLengthConciseness(text: string, maxPoints: number = 15): nu
 }
 
 export function scoreEmotion(text: string, maxPoints: number = 20): number {
-  const comp = SIA.polarity_scores(text).compound;
+  const comp = analyzer.polarity_scores(text).compound;
   return Math.round(maxPoints * ((comp + 1) / 2) * 100) / 100;
 }
 
@@ -266,5 +264,3 @@ function generateSuggestions(scores: any, adText: string): string[] {
 
   return suggestions;
 }
-
-
