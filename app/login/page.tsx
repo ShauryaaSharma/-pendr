@@ -36,13 +36,21 @@ export default function LoginPage() {
     }
   }
 
-  const handleGoogleLogin = () => {
-    // Simulate Google OAuth
-    const success = login('demo@example.com', 'password')
+  const handleGoogleLogin = async () => {
+  try {
+    // call login and await the boolean result
+    const success: boolean = await login('demo@example.com', 'password')
+
     if (success) {
       router.push(redirectTo)
+    } else {
+      setError('Google sign-in failed. Please try again.')
     }
+  } catch (err) {
+    console.error('Google login error', err)
+    setError('An error occurred during Google sign in. Please try again.')
   }
+}
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
