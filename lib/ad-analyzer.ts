@@ -159,7 +159,10 @@ export function scorePowerWords(text: string, maxPoints: number = 15): number {
 
 export function scoreCta(text: string, maxPoints: number = 15): number {
   const tokens = new Set(tokenize(text));
-  const hasCta = [...CTA_VERBS].some(verb => tokens.has(verb));
+  let hasCta = false;
+  CTA_VERBS.forEach(verb => {
+    if (!hasCta && tokens.has(verb)) hasCta = true;
+  });
   return hasCta ? maxPoints : 0;
 }
 
