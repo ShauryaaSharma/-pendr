@@ -4,18 +4,19 @@ export const dynamic = 'force-dynamic' // optional - keep if you need dynamic be
 import React from 'react'
 import LoginClient from './LoginClient'
 
-export default function LoginPage({ searchParams }) {
-  // Next provides searchParams as a plain object (or URLSearchParams-like in some versions)
-  // Handle both cases safely:
+interface LoginPageProps {
+  searchParams?: { [key: string]: string | string[] | undefined }
+}
+
+export default function LoginPage({ searchParams }: LoginPageProps) {
   const redirect =
-    (typeof searchParams?.get === 'function' ? searchParams.get('redirect') : searchParams?.redirect) || '/'
+    typeof searchParams?.redirect === "string"
+      ? searchParams.redirect
+      : "/"
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Pass redirect to the client component */}
-        <LoginClient redirectTo={redirect} />
-      </div>
+    <div>
+      <LoginClient redirectTo={redirect} />
     </div>
   )
 }
