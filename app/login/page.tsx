@@ -4,24 +4,24 @@ export const dynamic = 'force-dynamic'
 import React from 'react'
 import LoginClient from './LoginClient'
 
-export default function LoginPage({
-  searchParams,
-}: {
-  searchParams?: Record<string, string | string[] | undefined> | URLSearchParams
-}) {
-  // Support both shapes: plain object or URLSearchParams
+/**
+ * We intentionally accept "props: any" to avoid Next internal PageProps typing mismatches
+ * across Next versions (some versions use Promise<any> for searchParams).
+ */
+export default function LoginPage(props: any) {
+  const { searchParams } = props
+
   let redirect = '/'
 
-  if (searchParams) {
-    if (typeof (searchParams as URLSearchParams).get === 'function') {
-      // URLSearchParams case
-      redirect = (searchParams as URLSearchParams).get('redirect') || '/'
-    } else {
-      // plain object case
-      const sp = searchParams as Record<string, string | string[] | undefined>
-      const r = sp?.redirect
-      redirect = typeof r === 'string' ? r : '/'
-    }
+  // Case: searchParams is a Promise (some Next versions)
+  if (searchParams && typeof searchParams.then === 'function') {
+    // Can't await here reliably; default to '/'
+    redirect = '/'
+  } else if (searchParams instanceof URLSearchParams) {
+    redirect = searchParams.get('redirect') || '/'
+  } else if (typeof searchParams === 'object' && searchParams !== null) {
+    const r = (searchParams as Record<string, unknown>)?.redirect
+    redirect = typeof r === 'string' ? r : '/'
   }
 
   return (
