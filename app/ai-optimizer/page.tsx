@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,8 +17,15 @@ import {
   CheckCircle,
   Sparkles
 } from 'lucide-react'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
-import { allocateSlabs, convertToPieChartData, benchmarks, audienceMultipliers } from '@/lib/ml-budget-allocator'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
+import {
+  AD_CREATIVE_FORMAT_OPTIONS,
+  BUSINESS_SIZE_OPTIONS,
+  CAMPAIGN_OBJECTIVE_OPTIONS,
+  INDUSTRY_OPTIONS,
+  REGION_OPTIONS,
+  TARGET_AUDIENCE_GROUPS,
+} from '@/lib/form-options'
 
 interface AIOptimizationResult {
   totalBudget: number
@@ -42,6 +49,12 @@ interface AIOptimizationResult {
   }>
 }
 
+interface AIOptimizationApiResponse {
+  success: boolean
+  result?: AIOptimizationResult
+  error?: string
+}
+
 export default function AIOptimizerPage() {
   const router = useRouter()
   const [isOptimizing, setIsOptimizing] = useState(false)
@@ -51,7 +64,10 @@ export default function AIOptimizerPage() {
     industry: '',
     region: '',
     companyName: '',
-    aov: ''
+    aov: '',
+    objective: '',
+    businessSize: '',
+    creativeFormats: [] as string[],
   })
   const [keywords, setKeywords] = useState<string[]>([])
   const [currentKeyword, setCurrentKeyword] = useState('')
@@ -59,6 +75,10 @@ export default function AIOptimizerPage() {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleCreativeFormatsChange = (selectedValues: string[]) => {
+    setFormData((prev) => ({ ...prev, creativeFormats: selectedValues }))
   }
 
   const addKeyword = () => {
@@ -80,106 +100,134 @@ export default function AIOptimizerPage() {
   }
 
   const handleOptimize = async () => {
-    if (!formData.budget || !formData.industry || !formData.region || !formData.companyName || keywords.length === 0 || !targetAudience || !formData.aov) {
+    if (
+      !formData.budget ||
+      !formData.industry ||
+      !formData.region ||
+      !formData.companyName ||
+      keywords.length === 0 ||
+      !targetAudience ||
+      !formData.aov ||
+      !formData.objective ||
+      !formData.businessSize
+    ) {
       return
     }
 
     setIsOptimizing(true)
-    
-    // Simulate AI optimization process
-    setTimeout(() => {
-      const result = generateMLOptimization(formData)
-      setOptimizationResult(result)
+    try {
+      const response = await fetch('/api/budget-optimizer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mode: 'ai_optimization',
+          input: {
+            ...formData,
+            keywords,
+            targetAudience,
+          },
+        }),
+      })
+
+      const payload = (await response.json()) as AIOptimizationApiResponse
+
+      if (!response.ok || !payload.success || !payload.result) {
+        throw new Error(payload.error || 'Failed to generate optimization result.')
+      }
+
+      setOptimizationResult(payload.result)
+      persistCampaignData(formData)
+      persistOptimizationResult(payload.result)
+    } catch (error) {
+      console.error('Python optimizer failed, using fallback model:', error)
+      const fallbackResult = generateFallbackOptimization(formData)
+      setOptimizationResult(fallbackResult)
+      persistCampaignData(formData)
+      persistOptimizationResult(fallbackResult)
+    } finally {
       setIsOptimizing(false)
-    }, 3000)
+    }
   }
 
-  const generateMLOptimization = (data: any): AIOptimizationResult => {
-    const budget = parseFloat(data.budget)
-    const aov = parseFloat(data.aov)
-    
-    // Map industry to ML algorithm format
-    const industryMapping: { [key: string]: keyof typeof benchmarks } = {
-      'Technology': 'B2B_SaaS',
-      'E-commerce': 'Ecommerce',
-      'Healthcare': 'Healthcare',
-      'Travel': 'Travel',
-      'Education': 'Education',
-      'Finance': 'B2B_SaaS',
-      'Retail': 'Ecommerce'
-    }
-
-    // Map target audience to ML algorithm format
-    const audienceMapping: { [key: string]: keyof typeof audienceMultipliers } = {
-      'Gen Z (18-26)': 'GenZ',
-      'Millennials (27-42)': 'Millennials',
-      'Business Professionals': 'B2B',
-      'Healthcare Workers': 'Healthcare',
-      'Travel Enthusiasts': 'Travelers'
-    }
-
-    const mlIndustry = industryMapping[data.industry] || 'Ecommerce'
-    const mlAudience = audienceMapping[targetAudience] || 'Millennials'
-
-    // Run ML allocation algorithm
-    const mlResult = allocateSlabs(budget, mlIndustry, mlAudience, aov)
-    
-    // Convert ML result to pie chart data
-    const pieData = convertToPieChartData(mlResult, budget)
-    
-    // Convert to our expected format
-    const channelAllocation = pieData.map(item => ({
-      channel: item.name,
-      budget: item.value,
-      percentage: item.percentage,
-      color: item.color
-    }))
-
-    // Calculate aggregate metrics from ML results
-    const totalReach = mlResult.ranked.reduce((sum, [, result]) => sum + result.reach, 0)
-    const totalClicks = mlResult.ranked.reduce((sum, [, result]) => sum + result.clicks, 0)
-    const totalConversions = mlResult.ranked.reduce((sum, [, result]) => sum + result.conversions, 0)
-    const totalRevenue = mlResult.ranked.reduce((sum, [, result]) => sum + result.revenue, 0)
-    const avgCAC = totalConversions > 0 ? budget / totalConversions : 0
-    const avgCTR = totalReach > 0 ? (totalClicks / totalReach) * 100 : 0
-    const avgROAS = budget > 0 ? totalRevenue / budget : 0
-
-    const improvements = [
-      { metric: 'Impressions', improvement: Math.round((totalReach - budget * 250) / (budget * 250) * 100) },
-      { metric: 'Clicks', improvement: Math.round((totalClicks - budget * 10) / (budget * 10) * 100) },
-      { metric: 'Conversions', improvement: Math.round((totalConversions - budget * 1.5) / (budget * 1.5) * 100) },
-      { metric: 'ROAS', improvement: Math.round((avgROAS - 1.2) / 1.2 * 100) },
-      { metric: 'CTR', improvement: Math.round((avgCTR - 2.5) / 2.5 * 100) },
-      { metric: 'CAC', improvement: Math.round((avgCAC - 50) / 50 * -100) }
-    ]
-
-    // Save campaign data for channel breakdown
+  const persistCampaignData = (data: typeof formData) => {
     const campaignData = {
       budget: data.budget,
       companyName: data.companyName,
       industry: data.industry,
       region: data.region,
-      targetAudience: targetAudience,
-      keywords: keywords,
+      targetAudience,
+      objective: data.objective,
+      businessSize: data.businessSize,
+      creativeFormats: data.creativeFormats,
+      keywords,
       productDescription: keywords.join(', '),
-      usp: `${data.industry} solutions for ${targetAudience}`
+      usp: `${data.industry} solutions for ${targetAudience}`,
     }
+
     localStorage.setItem('spendr_campaign_data', JSON.stringify(campaignData))
+  }
+
+  const persistOptimizationResult = (result: AIOptimizationResult) => {
+    localStorage.setItem('spendr_ai_optimization_result', JSON.stringify(result))
+  }
+
+  const generateFallbackOptimization = (data: typeof formData): AIOptimizationResult => {
+    const budget = parseFloat(data.budget)
+    const aov = parseFloat(data.aov)
+
+    const channelAllocation = [
+      { channel: 'Google Ads', percentage: 27, color: '#10B981' },
+      { channel: 'Facebook Ads', percentage: 23, color: '#3B82F6' },
+      { channel: 'Instagram', percentage: 18, color: '#EC4899' },
+      { channel: 'YouTube', percentage: 14, color: '#FF0000' },
+      { channel: 'LinkedIn Ads', percentage: 10, color: '#0077B5' },
+      { channel: 'Email Marketing', percentage: 8, color: '#8B5CF6' },
+    ].map((item) => ({
+      ...item,
+      budget: Math.round((item.percentage / 100) * budget),
+    }))
+
+    const impressions = Math.round(budget * 210)
+    const clicks = Math.round(impressions * 0.032)
+    const conversions = Math.max(1, Math.round(clicks * 0.09))
+    const revenue = conversions * aov
+    const cac = Math.round(budget / conversions)
+    const ctr = Math.round((clicks / impressions) * 10000) / 100
+    const roas = Math.round((revenue / budget) * 100) / 100
 
     return {
       totalBudget: budget,
       channelAllocation,
       expectedMetrics: {
-        impressions: Math.round(totalReach),
-        clicks: Math.round(totalClicks),
-        conversions: Math.round(totalConversions),
-        cac: Math.round(avgCAC),
-        ctr: Math.round(avgCTR * 100) / 100,
-        roas: Math.round(avgROAS * 100) / 100
+        impressions,
+        clicks,
+        conversions,
+        cac,
+        ctr,
+        roas,
       },
-      improvements
+      improvements: [
+        { metric: 'Impressions', improvement: 28 },
+        { metric: 'Clicks', improvement: 34 },
+        { metric: 'Conversions', improvement: 41 },
+        { metric: 'ROAS', improvement: 25 },
+        { metric: 'CTR', improvement: 18 },
+        { metric: 'CAC', improvement: 22 },
+      ],
     }
   }
+
+  const dynamicAllocation = (optimizationResult?.channelAllocation || []).map((channel, index) => ({
+    id: `channel-${index}`,
+    name: channel.channel,
+    percentage: channel.percentage,
+    budget: channel.budget,
+    color: channel.color,
+  }))
+  const getImprovement = (metric: string) =>
+    optimizationResult?.improvements.find((item) => item.metric === metric)?.improvement ?? 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -194,6 +242,14 @@ export default function AIOptimizerPage() {
             >
               <ArrowLeft className="h-4 w-4" />
               Back
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => router.push('/ai-optimizer/channel-breakdown')}
+              className="flex items-center gap-2"
+            >
+              <BarChart3 className="h-4 w-4" />
+              Channel Breakdown
             </Button>
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-2">
@@ -237,16 +293,11 @@ export default function AIOptimizerPage() {
                       <SelectValue placeholder="Select your industry" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="technology">Technology</SelectItem>
-                      <SelectItem value="finance">Finance</SelectItem>
-                      <SelectItem value="healthcare">Healthcare</SelectItem>
-                      <SelectItem value="retail">Retail</SelectItem>
-                      <SelectItem value="education">Education</SelectItem>
-                      <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                      <SelectItem value="real-estate">Real Estate</SelectItem>
-                      <SelectItem value="food-beverage">Food & Beverage</SelectItem>
-                      <SelectItem value="automotive">Automotive</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      {INDUSTRY_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -258,12 +309,43 @@ export default function AIOptimizerPage() {
                       <SelectValue placeholder="Select target region" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="north-america">North America</SelectItem>
-                      <SelectItem value="europe">Europe</SelectItem>
-                      <SelectItem value="asia-pacific">Asia Pacific</SelectItem>
-                      <SelectItem value="latin-america">Latin America</SelectItem>
-                      <SelectItem value="middle-east-africa">Middle East & Africa</SelectItem>
-                      <SelectItem value="global">Global</SelectItem>
+                      {REGION_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Campaign Objective</label>
+                  <Select value={formData.objective} onValueChange={(value) => handleInputChange('objective', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select campaign objective" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CAMPAIGN_OBJECTIVE_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Business Size</label>
+                  <Select value={formData.businessSize} onValueChange={(value) => handleInputChange('businessSize', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select business size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BUSINESS_SIZE_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -337,17 +419,63 @@ export default function AIOptimizerPage() {
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Target Audience</label>
-                  <Input
-                    placeholder="Describe your target audience (e.g., young professionals, small business owners, tech enthusiasts)"
+                  <select
                     value={targetAudience}
                     onChange={(e) => setTargetAudience(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                     required
-                  />
+                  >
+                    <option value="" disabled>
+                      Select target audience
+                    </option>
+                    {TARGET_AUDIENCE_GROUPS.map((group) => (
+                      <optgroup key={group.label} label={group.label}>
+                        {group.options.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Ad Creative Format (Multi-select)</label>
+                  <select
+                    multiple
+                    value={formData.creativeFormats}
+                    onChange={(e) => {
+                      const selectedValues = Array.from(e.target.selectedOptions).map((option) => option.value)
+                      handleCreativeFormatsChange(selectedValues)
+                    }}
+                    className="flex min-h-[130px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                  >
+                    {AD_CREATIVE_FORMAT_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500">
+                    Hold Ctrl (Windows) or Command (Mac) to select multiple formats.
+                  </p>
                 </div>
 
                 <Button 
                   onClick={handleOptimize}
-                  disabled={!formData.budget || !formData.industry || !formData.region || !formData.companyName || keywords.length === 0 || !targetAudience || !formData.aov || isOptimizing}
+                  disabled={
+                    !formData.budget ||
+                    !formData.industry ||
+                    !formData.region ||
+                    !formData.companyName ||
+                    keywords.length === 0 ||
+                    !targetAudience ||
+                    !formData.aov ||
+                    !formData.objective ||
+                    !formData.businessSize ||
+                    isOptimizing
+                  }
                   className="w-full"
                   size="lg"
                 >
@@ -473,7 +601,7 @@ export default function AIOptimizerPage() {
                 <CardContent>
                   <div className="text-2xl font-bold">{optimizationResult.expectedMetrics.roas}x</div>
                   <p className="text-xs text-muted-foreground">
-                    +80% improvement
+                    {getImprovement('ROAS')}% improvement
                   </p>
                 </CardContent>
               </Card>
@@ -486,7 +614,7 @@ export default function AIOptimizerPage() {
                 <CardContent>
                   <div className="text-2xl font-bold">{optimizationResult.expectedMetrics.conversions.toLocaleString()}</div>
                   <p className="text-xs text-muted-foreground">
-                    +90% improvement
+                    {getImprovement('Conversions')}% improvement
                   </p>
                 </CardContent>
               </Card>
@@ -499,7 +627,7 @@ export default function AIOptimizerPage() {
                 <CardContent>
                   <div className="text-2xl font-bold">${optimizationResult.expectedMetrics.cac}</div>
                   <p className="text-xs text-muted-foreground">
-                    Optimized cost
+                    {getImprovement('CAC')}% improvement
                   </p>
                 </CardContent>
               </Card>
@@ -522,43 +650,7 @@ export default function AIOptimizerPage() {
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={[
-                            {
-                              id: 'facebook',
-                              name: 'Paid Social Facebook',
-                              percentage: 35,
-                              budget: 35000,
-                              color: '#3B82F6'
-                            },
-                            {
-                              id: 'google',
-                              name: 'Google Ads',
-                              percentage: 25,
-                              budget: 25000,
-                              color: '#10B981'
-                            },
-                            {
-                              id: 'display',
-                              name: 'Display Advertising',
-                              percentage: 20,
-                              budget: 20000,
-                              color: '#F59E0B'
-                            },
-                            {
-                              id: 'affiliate',
-                              name: 'Affiliate Marketing',
-                              percentage: 12,
-                              budget: 12000,
-                              color: '#EF4444'
-                            },
-                            {
-                              id: 'email',
-                              name: 'Email Marketing',
-                              percentage: 8,
-                              budget: 8000,
-                              color: '#8B5CF6'
-                            }
-                          ]}
+                          data={dynamicAllocation}
                           cx="50%"
                           cy="50%"
                           labelLine={false}
@@ -568,13 +660,7 @@ export default function AIOptimizerPage() {
                           dataKey="percentage"
                           onClick={() => router.push('/ai-optimizer/channel-breakdown')}
                         >
-                          {[
-                            { color: '#3B82F6' },
-                            { color: '#10B981' },
-                            { color: '#F59E0B' },
-                            { color: '#EF4444' },
-                            { color: '#8B5CF6' }
-                          ].map((entry, index) => (
+                          {dynamicAllocation.map((entry, index) => (
                             <Cell 
                               key={`cell-${index}`} 
                               fill={entry.color}
@@ -583,10 +669,10 @@ export default function AIOptimizerPage() {
                           ))}
                         </Pie>
                         <Tooltip 
-                          formatter={(value: number, name: string, props: any) => [
-                            `${value}% ($${props.payload.budget.toLocaleString()})`, 
-                            'Budget'
-                          ]}
+                          formatter={(value: number, _name: string, props: { payload?: { budget?: number } }) => {
+                            const budget = props.payload?.budget ?? 0
+                            return [`${value}% ($${budget.toLocaleString()})`, 'Budget']
+                          }}
                         />
                       </PieChart>
                     </ResponsiveContainer>
@@ -601,48 +687,12 @@ export default function AIOptimizerPage() {
                     Budget Summary
                   </CardTitle>
                   <CardDescription>
-                    Total budget: $100,000
+                    Total budget: ${optimizationResult.totalBudget.toLocaleString()}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {[
-                      {
-                        id: 'facebook',
-                        name: 'Paid Social Facebook',
-                        percentage: 35,
-                        budget: 35000,
-                        color: '#3B82F6'
-                      },
-                      {
-                        id: 'google',
-                        name: 'Google Ads',
-                        percentage: 25,
-                        budget: 25000,
-                        color: '#10B981'
-                      },
-                      {
-                        id: 'display',
-                        name: 'Display Advertising',
-                        percentage: 20,
-                        budget: 20000,
-                        color: '#F59E0B'
-                      },
-                      {
-                        id: 'affiliate',
-                        name: 'Affiliate Marketing',
-                        percentage: 12,
-                        budget: 12000,
-                        color: '#EF4444'
-                      },
-                      {
-                        id: 'email',
-                        name: 'Email Marketing',
-                        percentage: 8,
-                        budget: 8000,
-                        color: '#8B5CF6'
-                      }
-                    ].map((channel) => (
+                    {dynamicAllocation.map((channel) => (
                       <div key={channel.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-center gap-3">
                           <div 
@@ -664,6 +714,13 @@ export default function AIOptimizerPage() {
 
             {/* Action Buttons */}
             <div className="flex justify-center gap-4">
+              <Button 
+                size="lg"
+                onClick={() => router.push('/ai-optimizer/channel-breakdown')}
+                className="px-8"
+              >
+                View Channel Breakdown
+              </Button>
               <Button 
                 size="lg" 
                 onClick={() => router.push('/campaign-setup')}
