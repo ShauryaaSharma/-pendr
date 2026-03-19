@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   DollarSign, 
@@ -13,9 +14,6 @@ import {
   Target, 
   TrendingUp, 
   Eye, 
-  MousePointer, 
-  ShoppingCart,
-  AlertTriangle,
   Lightbulb,
   BarChart3
 } from 'lucide-react'
@@ -30,6 +28,8 @@ interface CampaignData {
   targetAudience: string
   region: string
   campaignDuration: string
+  objective?: string
+  businessSize?: string
   usp: string
   demographics: string
   companyName: string
@@ -62,9 +62,11 @@ export default function DashboardPage() {
   const router = useRouter()
   const [campaignData, setCampaignData] = useState<CampaignData | null>(null)
   const [predictedMetrics, setPredictedMetrics] = useState<PredictedMetrics | null>(null)
+  const [groqApiKey, setGroqApiKey] = useState('')
 
   useEffect(() => {
     const data = localStorage.getItem('spendr_campaign_data')
+    const savedGroqApiKey = localStorage.getItem('spendr_groq_api_key')
     if (data) {
       const parsed = JSON.parse(data)
       setCampaignData(parsed)
@@ -74,6 +76,10 @@ export default function DashboardPage() {
       setPredictedMetrics(metrics)
     } else {
       router.push('/')
+    }
+
+    if (savedGroqApiKey) {
+      setGroqApiKey(savedGroqApiKey)
     }
   }, [router])
 
@@ -223,6 +229,26 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
+        <div className="mb-6 rounded-lg border bg-white p-4">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center">
+            <label htmlFor="groq-api-key" className="text-sm font-medium text-gray-800">
+              🔑 Groq API Key:
+            </label>
+            <Input
+              id="groq-api-key"
+              type="password"
+              placeholder="gsk_..."
+              value={groqApiKey}
+              onChange={(e) => {
+                const nextValue = e.target.value
+                setGroqApiKey(nextValue)
+                localStorage.setItem('spendr_groq_api_key', nextValue)
+              }}
+              className="md:max-w-xl"
+            />
+          </div>
+        </div>
+
         {/* Main Content Tabs */}
         <Tabs defaultValue="visualizations" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
@@ -251,14 +277,13 @@ export default function DashboardPage() {
               budgetAllocation={campaignData.budgetAllocation || {}} 
               totalBudget={parseFloat(campaignData.budget)} 
             />
-
-            {/* Show AI Predictions for Comparison if User Data is Available */}
           </TabsContent>
 
           <TabsContent value="shortcomings">
             <ShortcomingsPanel 
               campaignData={campaignData} 
               predictedMetrics={predictedMetrics} 
+              groqApiKey={groqApiKey}
             />
           </TabsContent>
 

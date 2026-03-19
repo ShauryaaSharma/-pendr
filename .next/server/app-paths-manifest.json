@@ -1,7 +1,10 @@
 {
+  "/api/budget-optimizer/route": "app/api/budget-optimizer/route.js",
   "/page": "app/page.js",
-  "/ai-optimizer/page": "app/ai-optimizer/page.js",
-  "/landing/page": "app/landing/page.js",
   "/campaign-setup/page": "app/campaign-setup/page.js",
-  "/ai-optimizer/channel-breakdown/page": "app/ai-optimizer/channel-breakdown/page.js"
+  "/optimize-compare/page": "app/optimize-compare/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/ai-optimizer/page": "app/ai-optimizer/page.js",
+  "/ai-optimizer/channel-breakdown/page": "app/ai-optimizer/channel-breakdown/page.js",
+  "/simulate/page": "app/simulate/page.js"
 }

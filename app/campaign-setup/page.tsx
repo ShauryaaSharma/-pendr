@@ -7,7 +7,16 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Target, DollarSign, Globe, Clock, Users, Lightbulb, ArrowLeft } from 'lucide-react'
+import { Target, DollarSign, Globe, Clock, Users, Lightbulb } from 'lucide-react'
+import {
+  AD_CREATIVE_FORMAT_OPTIONS,
+  BUSINESS_SIZE_OPTIONS,
+  CAMPAIGN_OBJECTIVE_OPTIONS,
+  CAMPAIGN_DURATION_OPTIONS,
+  INDUSTRY_OPTIONS,
+  REGION_OPTIONS,
+  TARGET_AUDIENCE_GROUPS,
+} from '@/lib/form-options'
 
 export default function CampaignSetupPage() {
   const router = useRouter()
@@ -18,6 +27,9 @@ export default function CampaignSetupPage() {
     targetAudience: '',
     region: '',
     campaignDuration: '',
+    objective: '',
+    businessSize: '',
+    creativeFormats: [] as string[],
     usp: '',
     demographics: '',
     companyName: '',
@@ -49,6 +61,13 @@ export default function CampaignSetupPage() {
         ...prev.budgetAllocation,
         [platform]: value
       }
+    }))
+  }
+
+  const handleCreativeFormatsChange = (selectedValues: string[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      creativeFormats: selectedValues,
     }))
   }
 
@@ -133,16 +152,11 @@ export default function CampaignSetupPage() {
                       <SelectValue placeholder="Select your industry" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="technology">Technology</SelectItem>
-                      <SelectItem value="finance">Finance</SelectItem>
-                      <SelectItem value="healthcare">Healthcare</SelectItem>
-                      <SelectItem value="retail">Retail</SelectItem>
-                      <SelectItem value="education">Education</SelectItem>
-                      <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                      <SelectItem value="real-estate">Real Estate</SelectItem>
-                      <SelectItem value="food-beverage">Food & Beverage</SelectItem>
-                      <SelectItem value="automotive">Automotive</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      {INDUSTRY_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -173,13 +187,43 @@ export default function CampaignSetupPage() {
                       <SelectValue placeholder="Select duration" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1-week">1 Week</SelectItem>
-                      <SelectItem value="2-weeks">2 Weeks</SelectItem>
-                      <SelectItem value="1-month">1 Month</SelectItem>
-                      <SelectItem value="2-months">2 Months</SelectItem>
-                      <SelectItem value="3-months">3 Months</SelectItem>
-                      <SelectItem value="6-months">6 Months</SelectItem>
-                      <SelectItem value="1-year">1 Year</SelectItem>
+                      {CAMPAIGN_DURATION_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Campaign Objective</label>
+                  <Select value={formData.objective} onValueChange={(value) => handleInputChange('objective', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select campaign objective" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CAMPAIGN_OBJECTIVE_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Business Size</label>
+                  <Select value={formData.businessSize} onValueChange={(value) => handleInputChange('businessSize', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select business size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BUSINESS_SIZE_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -195,12 +239,11 @@ export default function CampaignSetupPage() {
                       <SelectValue placeholder="Select target region" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="north-america">North America</SelectItem>
-                      <SelectItem value="europe">Europe</SelectItem>
-                      <SelectItem value="asia-pacific">Asia Pacific</SelectItem>
-                      <SelectItem value="latin-america">Latin America</SelectItem>
-                      <SelectItem value="middle-east-africa">Middle East & Africa</SelectItem>
-                      <SelectItem value="global">Global</SelectItem>
+                      {REGION_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -211,13 +254,48 @@ export default function CampaignSetupPage() {
                     <Target className="h-4 w-4" />
                     Target Audience
                   </label>
-                  <Input
-                    placeholder="e.g., Young professionals, 25-35"
+                  <select
                     value={formData.targetAudience}
                     onChange={(e) => handleInputChange('targetAudience', e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                     required
-                  />
+                  >
+                    <option value="" disabled>
+                      Select target audience
+                    </option>
+                    {TARGET_AUDIENCE_GROUPS.map((group) => (
+                      <optgroup key={group.label} label={group.label}>
+                        {group.options.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Ad Creative Format (Multi-select)</label>
+                <select
+                  multiple
+                  value={formData.creativeFormats}
+                  onChange={(e) => {
+                    const selectedValues = Array.from(e.target.selectedOptions).map((option) => option.value)
+                    handleCreativeFormatsChange(selectedValues)
+                  }}
+                  className="flex min-h-[130px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                >
+                  {AD_CREATIVE_FORMAT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500">
+                  Hold Ctrl (Windows) or Command (Mac) to select multiple formats.
+                </p>
               </div>
 
               {/* Product Description */}
